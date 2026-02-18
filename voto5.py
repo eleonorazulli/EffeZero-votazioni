@@ -71,7 +71,7 @@ if folder_link:
 st.subheader("Inserisci il tuo nome")
 user = st.text_input("Nome")
 
-st.subheader("Seleziona al massimo 3 foto")
+st.subheader("Seleziona le foto che vuoi votare")
 
 selected = []
 
@@ -104,8 +104,8 @@ if st.button("Invia voto"):
         st.warning("Inserisci il nome del contest.")
     elif user == "":
         st.warning("Inserisci il nome prima di inviare.")
-    elif len(selected) > 3:
-        st.error("Puoi selezionare al massimo 3 foto!")
+    #elif len(selected) > 3:
+    #    st.error("Puoi selezionare al massimo 3 foto!")
     else:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -131,3 +131,4 @@ if not df.empty and contest:
         st.bar_chart(ranking)
     else:
         st.info("Ancora nessun voto per questo contest.")
+
