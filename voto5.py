@@ -9,7 +9,7 @@ import io
 import re
 
 # ---------------------------
-# GOOGLE AUTH (STREAMLIT CLOUD VERSION)
+# GOOGLE AUTH (STREAMLIT CLOUD)
 # ---------------------------
 
 scope = [
@@ -17,7 +17,6 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-# Usa i Secrets invece di credentials.json
 creds_dict = st.secrets["gcp_service_account"]
 
 creds = ServiceAccountCredentials.from_json_keyfile_dict(
@@ -78,8 +77,10 @@ selected = []
 
 for i, file in enumerate(photo_files):
     file_id = file["id"]
+    file_name = file["name"]
 
     try:
+        # Scarica immagine privata via API
         request = drive_service.files().get_media(fileId=file_id)
         fh = io.BytesIO()
         downloader = MediaIoBaseDownload(fh, request)
@@ -92,8 +93,8 @@ for i, file in enumerate(photo_files):
 
         st.image(fh, width=400)
 
-        if st.checkbox(f"Vota {file['name']}", key=i):
-            selected.append(file_id)
+        if st.checkbox(f"Vota {file_name}", key=i):
+            selected.append(file_name)
 
     except Exception as e:
         st.error(f"Errore caricamento immagine: {e}")
@@ -108,8 +109,8 @@ if st.button("Invia voto"):
     else:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        for foto in selected:
-            sheet.append_row([contest, user, foto, timestamp])
+        for foto_nome in selected:
+            sheet.append_row([contest, user, foto_nome, timestamp])
 
         st.success("Voto salvato correttamente!")
 
