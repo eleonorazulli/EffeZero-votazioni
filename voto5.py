@@ -5,6 +5,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
+from PIL import Image, ImageOps
 import io
 import re
 
@@ -91,6 +92,7 @@ for i, file in enumerate(photo_files):
     file_name = file["name"]
 
     try:
+        # Scarica immagine privata via API
         request = drive_service.files().get_media(fileId=file_id)
         fh = io.BytesIO()
         downloader = MediaIoBaseDownload(fh, request)
@@ -101,7 +103,11 @@ for i, file in enumerate(photo_files):
 
         fh.seek(0)
 
-        st.image(fh, width=400)
+        # 🔹 Correzione automatica orientamento (foto verticali)
+        image = Image.open(fh)
+        image = ImageOps.exif_transpose(image)
+
+        st.image(image, width=400)
 
         if st.checkbox(f"Vota {file_name}", key=i):
             selected.append(file_name)
