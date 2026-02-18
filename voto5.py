@@ -36,7 +36,6 @@ drive_service = build("drive", "v3", credentials=creds)
 
 st.title("📸 Votazioni EffeZero")
 
-contest = st.text_input("Nome del contest")
 folder_link = st.text_input("Incolla il link della cartella Google Drive")
 
 def get_folder_id(folder_url):
@@ -45,6 +44,7 @@ def get_folder_id(folder_url):
         return match.group(1)
     return None
 
+contest = None
 photo_files = []
 
 if folder_link:
@@ -52,6 +52,17 @@ if folder_link:
 
     if folder_id:
         try:
+            # 🔹 Recupera nome cartella (contest automatico)
+            folder_metadata = drive_service.files().get(
+                fileId=folder_id,
+                fields="name"
+            ).execute()
+
+            contest = folder_metadata["name"]
+
+            st.success(f"Contest rilevato: {contest}")
+
+            # 🔹 Recupera immagini nella cartella
             results = drive_service.files().list(
                 q=f"'{folder_id}' in parents and mimeType contains 'image/'",
                 fields="files(id, name)",
@@ -80,7 +91,6 @@ for i, file in enumerate(photo_files):
     file_name = file["name"]
 
     try:
-        # Scarica immagine privata via API
         request = drive_service.files().get_media(fileId=file_id)
         fh = io.BytesIO()
         downloader = MediaIoBaseDownload(fh, request)
@@ -100,12 +110,10 @@ for i, file in enumerate(photo_files):
         st.error(f"Errore caricamento immagine: {e}")
 
 if st.button("Invia voto"):
-    if contest == "":
-        st.warning("Inserisci il nome del contest.")
+    if contest is None:
+        st.warning("Inserisci un link cartella valido.")
     elif user == "":
         st.warning("Inserisci il nome prima di inviare.")
-    #elif len(selected) > 3:
-    #    st.error("Puoi selezionare al massimo 3 foto!")
     else:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -131,4 +139,3 @@ if not df.empty and contest:
         st.bar_chart(ranking)
     else:
         st.info("Ancora nessun voto per questo contest.")
-
